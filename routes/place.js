@@ -15,7 +15,7 @@ router.post("/create", async (req, res) => {
       country: req.body.country,
       city: req.body.city,
       district: req.body.district,
-      categories: req.body.categories,
+      category: req.body.category,
       price: req.body.price,
       in_stock: req.body.inStock,
     };
@@ -72,11 +72,9 @@ router.put("/update", async (req, res) => {
     const tokenId = getUserIdFromToken(token);
 
     if (!(await handleVerifyCreator(client, id, tokenId))) {
-      if (!(await handleVerifyAdminUser(client, tokenId))) {
-        return res
-          .status(401)
-          .json("You are not authorized to update this user.");
-      }
+      return res
+        .status(401)
+        .json("You are not authorized to update this user.");
     }
 
     handleUpdatePlaceById(client, id, placeDataToUpdate).then((isUpdated) => {
@@ -100,11 +98,9 @@ router.delete("/delete", async (req, res) => {
     const tokenId = getUserIdFromToken(token);
 
     if (!(await handleVerifyCreator(client, id, tokenId))) {
-      if (!(await handleVerifyAdminUser(client, tokenId))) {
-        return res
-          .status(401)
-          .json("You are not authorized to delete this place.");
-      }
+      return res
+        .status(401)
+        .json("You are not authorized to delete this place.");
     }
 
     handleDeletePlaceById(client, id, tokenId).then((isDeleted) => {
@@ -149,7 +145,7 @@ router.get("/place", async (req, res) => {
 //       places = await Place.find().sort({ createdAt: -1 }).limit(1);
 //     } else if (qCategory) {
 //       places = await Place.find({
-//         categories: {
+//         categorys: {
 //           $in: [qCategory],
 //         },
 //       });
@@ -190,7 +186,7 @@ const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
   client
     .query(
       `INSERT INTO places (id, title, description, country, city, district, 
-        categories, price, in_stock, image_path, creator, created_at) 
+        category, price, in_stock, image_path, creator, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
       [
         generatePlaceId(),
@@ -199,7 +195,7 @@ const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
         place.country,
         place.city,
         place.district,
-        place.categories,
+        place.category,
         place.price,
         place.in_stock,
         imagePath,
@@ -226,19 +222,6 @@ const handleDeletePlaceById = async (client, placeId, tokenId) => {
   return result.rowCount > 0;
 };
 
-const handleVerifyAdminUser = async (client, id) => {
-  const result = await client
-    .query(`SELECT admin FROM users WHERE id = $1`, [id])
-    .catch((err) => {
-      console.log(err);
-    });
-  if (result.rows[0]?.admin === true) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
 const handleVerifyCreator = async (client, placeId, tokenId) => {
   const result = await client
     .query(`SELECT creator FROM places WHERE id = $1 AND creator = $2;`, [
@@ -260,7 +243,7 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
     country = $3,
     city = $4,
     district = $5 
-    categories = $6 
+    category = $6 
     price = $6 
     in_stock = $7 
     WHERE id = $8
@@ -271,7 +254,7 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
         placeDataToUpdate.country,
         placeDataToUpdate.city,
         placeDataToUpdate.district,
-        placeDataToUpdate.categories,
+        placeDataToUpdate.category,
         placeDataToUpdate.price,
         placeDataToUpdate.in_stock,
         id,
