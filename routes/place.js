@@ -9,29 +9,25 @@ router.post("/create", async (req, res) => {
   const client = handleGetClient();
 
   try {
-    const place = {
-      title: req.body.title,
-      description: req.body.description,
-      country: req.body.country,
-      city: req.body.city,
-      district: req.body.district,
-      category: req.body.category,
-      price: req.body.price,
-      in_stock: req.body.inStock,
-    };
+    const place = req.body.place;
     const token = req.body.token;
     const image = req.image;
     const imageType = req.imageType;
 
     // verify data
-    for (const [key, value] of Object.entries(place)) {
-      if (!value) {
-        return res.status(400).send("Missing required data.");
-      }
-    }
-
-    if (!image) {
-      return res.status(400).send("Missing required data: image");
+    if (
+      !(
+        image &&
+        place.title &&
+        place.description &&
+        place.country &&
+        place.city &&
+        place.district &&
+        place.price &&
+        place.category
+      )
+    ) {
+      return res.status(400).send("Missing required data.");
     }
 
     //verify token
@@ -186,8 +182,11 @@ const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
   client
     .query(
       `INSERT INTO places (id, title, description, country, city, district, 
-        category, price, in_stock, image_path, creator, created_at) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
+        category, price, available, image_path, gross_square_meters, 
+        room_living_rooms_number, bathroom_number, item_status, elevator, garden, 
+        balcony, park, wifi, heating_type, creator, created_at) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+         $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);`,
       [
         generatePlaceId(),
         place.title,
@@ -197,8 +196,18 @@ const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
         place.district,
         place.category,
         place.price,
-        place.in_stock,
+        place.available,
         imagePath,
+        place.gross_square_meters,
+        place.room_living_rooms_number,
+        place.bathroom_number,
+        place.item_status,
+        place.elevator,
+        place.garden,
+        place.balcony,
+        place.park,
+        place.wifi,
+        place.heating_type,
         tokenId,
         new Date().toISOString(),
       ]
@@ -238,16 +247,27 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
   const result = await client
     .query(
       `UPDATE places SET
-    title = $1,
-    description = $2,
-    country = $3,
-    city = $4,
-    district = $5 
-    category = $6 
-    price = $6 
-    in_stock = $7 
-    WHERE id = $8
-    RETURNING id;`,
+        title = $1,
+        description = $2,
+        country = $3,
+        city = $4,
+        district = $5,
+        category = $6,
+        price = $7,
+        available = $8,
+        gross_square_meters = $9,
+        room_living_rooms_number = $10,
+        bathroom_number = $11,
+        item_status = $12,
+        elevator = $13,
+        garden = $14,
+        balcony = $15,
+        park = $16,
+        wifi = $17,
+        heating_type = $18,
+        updated_at = $19
+      WHERE id = $20
+      RETURNING id;`,
       [
         placeDataToUpdate.title,
         placeDataToUpdate.description,
@@ -256,7 +276,18 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
         placeDataToUpdate.district,
         placeDataToUpdate.category,
         placeDataToUpdate.price,
-        placeDataToUpdate.in_stock,
+        placeDataToUpdate.available,
+        placeDataToUpdate.gross_square_meters,
+        placeDataToUpdate.room_living_rooms_number,
+        placeDataToUpdate.bathroom_number,
+        placeDataToUpdate.item_status,
+        placeDataToUpdate.elevator,
+        placeDataToUpdate.garden,
+        placeDataToUpdate.balcony,
+        placeDataToUpdate.park,
+        placeDataToUpdate.wifi,
+        placeDataToUpdate.heating_type,
+        new Date().toISOString(),
         id,
       ]
     )
