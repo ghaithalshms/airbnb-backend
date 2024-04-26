@@ -40,9 +40,8 @@ router.post("/create", async (req, res) => {
     }
 
     // upload image
-    const imagePath = image
-      ? await UploadFileToFireBase(image, imageType, "places")
-      : null;
+    const imagePath =
+      image && (await UploadFileToFireBase(image, imageType, "places"));
 
     if (!imagePath) {
       return res
