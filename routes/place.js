@@ -58,6 +58,48 @@ router.post("/create", async (req, res) => {
   }
 });
 
+router.post("/favorite", async (req, res) => {
+  const client = handleGetClient();
+
+  try {
+    const placeId = req.body.placeId;
+    const token = req.body.token;
+
+    // verify data
+    if (!(placeId && token)) {
+      return res.status(400).send("Missing required data.");
+    }
+
+    //verify token
+    const tokenId = getUserIdFromToken(token);
+
+    if (!tokenId) {
+      return res
+        .status(401)
+        .json("You are not authorized to create this place, wrong token.");
+    }
+
+    // add place to favorites
+    handleAddPlaceToFavoriteById(client, placeId, tokenId).then((isAdded) => {
+      if (isAdded) {
+        res
+          .status(200)
+          .send("Place added to favorites successfully: " + placeId);
+      } else {
+        res
+          .status(500)
+          .send(
+            "An error happened while adding place to favorites: " + placeId
+          );
+      }
+    });
+  } catch (err) {
+    res.status(500).json(err);
+  } finally {
+    client?.release();
+  }
+});
+
 router.put("/update", async (req, res) => {
   const client = await handleGetClient();
   try {
@@ -173,7 +215,7 @@ const getUserIdFromToken = (token) => {
   }
 };
 
-const generatePlaceId = () => {
+const generateId = () => {
   return v4();
 };
 
@@ -187,7 +229,7 @@ const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
          $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);`,
       [
-        generatePlaceId(),
+        generateId(),
         place.title,
         place.description,
         place.country,
@@ -309,6 +351,20 @@ const handleGetPlaceById = async (client, id) => {
   } else {
     return null;
   }
+};
+
+const handleAddPlaceToFavoriteById = async (client, placeId, tokenId) => {
+  const result = await client
+    .query(
+      `INSERT INTO favorites (id, place_id, user_id, added_at) 
+      VALUES ($1, $2, $3, $5) RETURNING id;`,
+      [generateId(), placeId, tokenId, new Date().toISOString()]
+    )
+    .catch((err) => {
+      console.log(err);
+    });
+
+  return result.rowCount > 0;
 };
 
 module.exports = router;
