@@ -187,7 +187,8 @@ router.get("/place", async (req, res) => {
 router.get("/places", async (req, res) => {
   const client = await handleGetClient();
   try {
-    const places = await handleGetPlaces(client);
+    const filters = req.query.filters;
+    const places = await handleGetPlaces(client, filters);
     res.status(200).json(places);
   } catch (err) {
     res.status(500).json(err);
