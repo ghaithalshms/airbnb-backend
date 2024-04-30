@@ -180,30 +180,6 @@ router.get("/place", async (req, res) => {
   }
 });
 
-// router.get("/", async (req, res) => {
-//   const qNew = req.query.new;
-//   const qCategory = req.query.category;
-//   try {
-//     let places;
-
-//     if (qNew) {
-//       places = await Place.find().sort({ createdAt: -1 }).limit(1);
-//     } else if (qCategory) {
-//       places = await Place.find({
-//         categorys: {
-//           $in: [qCategory],
-//         },
-//       });
-//     } else {
-//       places = await Place.find();
-//     }
-
-//     res.status(200).json(places);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
-
 router.get("/places", async (req, res) => {
   const client = await handleGetClient();
   try {
