@@ -22,7 +22,7 @@ router.post("/create", async (req, res) => {
         place.description &&
         place.country &&
         place.city &&
-        place.district &&
+        place.county &&
         place.price &&
         place.category
       )
@@ -63,6 +63,8 @@ router.post("/create", async (req, res) => {
     client?.release();
   }
 });
+
+router.get("/places");
 
 router.post("/favorite", async (req, res) => {
   const client = handleGetClient();
@@ -228,34 +230,32 @@ const generateId = () => {
 const handleCreatePlace = async (client, place, tokenId, imagePath) => {
   const result = await client
     .query(
-      `INSERT INTO places (id, title, description, country, city, district, 
-        category, price, available, image_path, gross_square_meters, 
-        room_living_rooms_number, bathroom_number, item_status, elevator, garden, 
-        balcony, park, wifi, heating_type, creator, created_at) 
+      `INSERT INTO places (id, title, description, country, city, county, district,
+      image_path, area, rooms, wc, price, beds, pets, available,
+      category, amenities, features, creator, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-         $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+         $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
          RETURNING id;`,
       [
         generateId(),
+        place.id,
         place.title,
         place.description,
         place.country,
         place.city,
+        place.county,
         place.district,
-        place.category,
-        place.price,
-        place.available,
         imagePath,
-        place.gross_square_meters,
-        place.room_living_rooms_number,
-        place.bathroom_number,
-        place.item_status,
-        place.elevator,
-        place.garden,
-        place.balcony,
-        place.park,
-        place.wifi,
-        place.heating_type,
+        place.area,
+        place.rooms,
+        place.wc,
+        place.price,
+        place.beds,
+        place.pets,
+        place.available,
+        place.category,
+        place.amenities,
+        place.features,
         tokenId,
         new Date().toISOString(),
       ]
@@ -297,20 +297,20 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
         description = $2,
         country = $3,
         city = $4,
-        district = $5,
-        category = $6,
-        price = $7,
-        available = $8,
-        gross_square_meters = $9,
-        room_living_rooms_number = $10,
-        bathroom_number = $11,
-        item_status = $12,
-        elevator = $13,
-        garden = $14,
-        balcony = $15,
-        park = $16,
-        wifi = $17,
-        heating_type = $18,
+        county = $5,
+        district = $6,
+        category = $7,
+        price = $8,
+        available = $9,
+        area = $10,
+        rooms = $11,
+        beds = $12,
+        wc = $13,
+        pets = $14,
+        available = $15,
+        category = $16,
+        amenities = $17,
+        features = $18,
         updated_at = $19
       WHERE id = $20
       RETURNING id;`,
@@ -319,20 +319,20 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
         placeDataToUpdate.description,
         placeDataToUpdate.country,
         placeDataToUpdate.city,
+        placeDataToUpdate.county,
         placeDataToUpdate.district,
         placeDataToUpdate.category,
         placeDataToUpdate.price,
         placeDataToUpdate.available,
-        placeDataToUpdate.gross_square_meters,
-        placeDataToUpdate.room_living_rooms_number,
-        placeDataToUpdate.bathroom_number,
-        placeDataToUpdate.item_status,
-        placeDataToUpdate.elevator,
-        placeDataToUpdate.garden,
-        placeDataToUpdate.balcony,
-        placeDataToUpdate.park,
-        placeDataToUpdate.wifi,
-        placeDataToUpdate.heating_type,
+        placeDataToUpdate.area,
+        placeDataToUpdate.rooms,
+        placeDataToUpdate.beds,
+        placeDataToUpdate.wc,
+        placeDataToUpdate.pets,
+        placeDataToUpdate.available,
+        placeDataToUpdate.category,
+        placeDataToUpdate.amenities,
+        placeDataToUpdate.features,
         new Date().toISOString(),
         id,
       ]
