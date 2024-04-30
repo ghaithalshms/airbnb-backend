@@ -7,18 +7,17 @@ const { UploadFileToFireBase } = require("../firebase/upload_file");
 
 // CREATE NEW PLACE
 router.post("/create", async (req, res) => {
-  const client = handleGetClient();
+  const client = await handleGetClient();
 
   try {
     const place = req.body.place;
     const token = req.body.token;
-    const image = req.image;
-    const imageType = req.imageType;
+    // const image = req.image;
+    // const imageType = req.imageType;
 
     // verify data
     if (
       !(
-        image &&
         place.title &&
         place.description &&
         place.country &&
@@ -40,15 +39,17 @@ router.post("/create", async (req, res) => {
         .json("You are not authorized to create this place, wrong token.");
     }
 
-    // upload image
-    const imagePath =
-      image && (await UploadFileToFireBase(image, imageType, "places"));
+    // // upload image
+    // const imagePath =
+    //   image && (await UploadFileToFireBase(image, imageType, "places"));
 
-    if (!imagePath) {
-      return res
-        .status(500)
-        .json("Unexpected error while uploading the image.");
-    }
+    // if (!imagePath) {
+    //   return res
+    //     .status(500)
+    //     .json("Unexpected error while uploading the image.");
+    // }
+
+    const imagePath = null;
 
     // create place
     handleCreatePlace(client, place, tokenId, imagePath).then((isCreated) => {
@@ -67,7 +68,7 @@ router.post("/create", async (req, res) => {
 
 // ADD TO FAVORITE
 router.post("/favorite", async (req, res) => {
-  const client = handleGetClient();
+  const client = await handleGetClient();
 
   try {
     const placeId = req.body.placeId;
