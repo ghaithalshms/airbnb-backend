@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const { v4 } = require("uuid");
 const { UploadFileToFireBase } = require("../firebase/upload_file");
 
+// CREATE NEW PLACE
 router.post("/create", async (req, res) => {
   const client = handleGetClient();
 
@@ -64,8 +65,7 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.get("/places");
-
+// ADD TO FAVORITE
 router.post("/favorite", async (req, res) => {
   const client = handleGetClient();
 
@@ -108,6 +108,7 @@ router.post("/favorite", async (req, res) => {
   }
 });
 
+// UPDATE A PLACE
 router.put("/update", async (req, res) => {
   const client = await handleGetClient();
   try {
@@ -136,6 +137,7 @@ router.put("/update", async (req, res) => {
   }
 });
 
+// DELETE A PLACE
 router.delete("/delete", async (req, res) => {
   const client = await handleGetClient();
   try {
@@ -164,6 +166,7 @@ router.delete("/delete", async (req, res) => {
   }
 });
 
+// GET A PLACE
 router.get("/place", async (req, res) => {
   const client = await handleGetClient();
   try {
@@ -180,6 +183,7 @@ router.get("/place", async (req, res) => {
   }
 });
 
+// GET PLACES WITH FILTER
 router.get("/places", async (req, res) => {
   const client = await handleGetClient();
   try {
@@ -193,6 +197,7 @@ router.get("/places", async (req, res) => {
   }
 });
 
+// MIDDLEWARES
 const handleGetClient = async () => {
   const pool = new Pool({ connectionString: process.env.PG_STRING });
   const client = await pool.connect().catch((err) => {
