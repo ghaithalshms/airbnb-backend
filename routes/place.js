@@ -12,12 +12,13 @@ router.post("/create", async (req, res) => {
   try {
     const place = req.body.place;
     const token = req.body.token;
-    // const image = req.image;
-    // const imageType = req.imageType;
+    const image = req.image;
+    const imageType = req.imageType;
 
     // verify data
     if (
       !(
+        image &&
         place.title &&
         place.description &&
         place.country &&
@@ -39,17 +40,15 @@ router.post("/create", async (req, res) => {
         .json("You are not authorized to create this place, wrong token.");
     }
 
-    // // upload image
-    // const imagePath =
-    //   image && (await UploadFileToFireBase(image, imageType, "places"));
+    // upload image
+    const imagePath =
+      image && (await UploadFileToFireBase(image, imageType, "places"));
 
-    // if (!imagePath) {
-    //   return res
-    //     .status(500)
-    //     .json("Unexpected error while uploading the image.");
-    // }
-
-    const imagePath = null;
+    if (!imagePath) {
+      return res
+        .status(500)
+        .json("Unexpected error while uploading the image.");
+    }
 
     // create place
     handleCreatePlace(client, place, tokenId, imagePath).then((isCreated) => {
@@ -188,7 +187,8 @@ router.get("/place", async (req, res) => {
 router.get("/places", async (req, res) => {
   const client = await handleGetClient();
   try {
-    const filters = req.query.filters;
+    const filters = JSON.parse(req.query.filters) || [];
+
     const places = await handleGetPlaces(client, filters);
     res.status(200).json(places);
   } catch (err) {
@@ -382,75 +382,109 @@ const setGetPlacesQueryParameters = (filters) => {
   let parameters = [];
 
   if (filters.category) {
-    query += ` WHERE category = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} category = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.category);
   }
   if (filters.country) {
-    query += ` WHERE country IN $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} country IN $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.countries);
   }
   if (filters.city) {
-    query += ` WHERE city IN $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} city IN $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.cities);
   }
   if (filters.county) {
-    query += ` WHERE county IN $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} county IN $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.counties);
   }
   if (filters.district) {
-    query += ` WHERE district IN $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} district IN $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.districts);
   }
   if (filters.area) {
     if (filters.area.max) {
-      query += ` WHERE area > $${parameters.length + 1}`;
+      query += ` ${parameters.length > 0 ? "AND" : "WHERE"} area < $${
+        parameters.length + 1
+      }`;
       parameters.push(filters.area.max);
     }
     if (filters.area.min) {
-      query += ` WHERE area < $${parameters.length + 1}`;
+      query += ` ${parameters.length > 0 ? "AND" : "WHERE"} area > $${
+        parameters.length + 1
+      }`;
       parameters.push(filters.area.min);
     }
   }
   if (filters.rooms) {
-    query += ` WHERE rooms = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} rooms = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.rooms);
   }
   if (filters.beds) {
-    query += ` WHERE beds = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} beds = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.beds);
   }
   if (filters.wc) {
-    query += ` WHERE wc = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} wc = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.wc);
   }
   if (filters.pets) {
-    query += ` WHERE pets = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} pets = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.pets);
   }
   if (filters.available) {
-    query += ` WHERE available = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} available = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.available);
   }
   if (filters.price) {
     if (filters.price.max) {
-      query += ` WHERE price > $${parameters.length + 1}`;
+      query += ` ${parameters.length > 0 ? "AND" : "WHERE"} price < $${
+        parameters.length + 1
+      }`;
       parameters.push(filters.price.max);
     }
     if (filters.price.min) {
-      query += ` WHERE price < $${parameters.length + 1}`;
+      query += ` ${parameters.length > 0 ? "AND" : "WHERE"} price > $${
+        parameters.length + 1
+      }`;
       parameters.push(filters.price.min);
     }
   }
   if (filters.amenities) {
-    query += ` WHERE $${parameters.length + 1} <@ amenities`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} $${
+      parameters.length + 1
+    } <@ amenities`;
     parameters.push(filters.amenities);
   }
   if (filters.features) {
-    query += ` WHERE $${parameters.length + 1} <@ features`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} $${
+      parameters.length + 1
+    } <@ features`;
     parameters.push(filters.features);
   }
   if (filters.category) {
-    query += ` WHERE category = $${parameters.length + 1}`;
+    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} category = $${
+      parameters.length + 1
+    }`;
     parameters.push(filters.category);
   }
 
