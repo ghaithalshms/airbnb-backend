@@ -122,15 +122,13 @@ const handleUpdateUserById = async (client, id, userDataToUpdate) => {
     .query(
       `UPDATE users SET
     username = $1,
-    password = $2,
-    first_name = $3,
-    last_name = $4,
-    email = $5 
-    WHERE id = $6
+    first_name = $2,
+    last_name = $3,
+    email = $4 
+    WHERE id = $5
     RETURNING id;`,
       [
         userDataToUpdate.username,
-        userDataToUpdate.password,
         userDataToUpdate.first_name,
         userDataToUpdate.last_name,
         userDataToUpdate.email,
