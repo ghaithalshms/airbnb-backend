@@ -5,16 +5,16 @@ require("dotenv").config();
 const { v4 } = require("uuid");
 var crypto = require("crypto");
 
-//KAYIT OLMA
+//REGISTER
 router.post("/register", async (req, res) => {
   const client = await handleGetClient();
   try {
     const user = {
-      username: req.body.username,
+      username: req.body.username.trim().toLowerCase(),
       password: req.body.password,
-      firstName: req.body.first_name,
-      lastName: req.body.last_name,
-      email: req.body.email,
+      first_name: firstLetterToCapital(req.body.first_name.trim()),
+      last_name: firstLetterToCapital(req.body.last_name.trim()),
+      email: req.body.email.trim().toLowerCase(),
     };
 
     // verify data
@@ -22,8 +22,9 @@ router.post("/register", async (req, res) => {
       if (!value) {
         return res.status(400).send("Missing required data.");
       }
+      console.assert(value != null);
     }
-
+    value != null;
     if (!isValidUsername(user.username)) {
       return res.status(400).send("Invalid username.");
     }
@@ -40,6 +41,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// LOGIN
 router.post("/login", async (req, res) => {
   const client = await handleGetClient();
   try {
@@ -79,6 +81,10 @@ const handleGetClient = async () => {
     console.log("pg client error:", err);
   });
   return client;
+};
+
+const firstLetterToCapital = (word) => {
+  return word.charAt(0).toUpperCase() + word.slice(1);
 };
 
 const isValidUsername = (username) => {
