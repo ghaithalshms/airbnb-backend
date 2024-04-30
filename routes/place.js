@@ -50,7 +50,13 @@ router.post("/create", async (req, res) => {
     }
 
     // create place
-    handleCreatePlace(client, res, place, tokenId, imagePath);
+    handleCreatePlace(client, place, tokenId, imagePath).then((isCreated) => {
+      if (isCreated) {
+        res.status(200).send("Place created successfully.");
+      } else {
+        res.status(500).send("Unexpected error while creating the place.");
+      }
+    });
   } catch (err) {
     res.status(500).json(err);
   } finally {
@@ -219,15 +225,16 @@ const generateId = () => {
   return v4();
 };
 
-const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
-  client
+const handleCreatePlace = async (client, place, tokenId, imagePath) => {
+  const result = await client
     .query(
       `INSERT INTO places (id, title, description, country, city, district, 
         category, price, available, image_path, gross_square_meters, 
         room_living_rooms_number, bathroom_number, item_status, elevator, garden, 
         balcony, park, wifi, heating_type, creator, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-         $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);`,
+         $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+         RETURNING id;`,
       [
         generateId(),
         place.title,
@@ -253,13 +260,11 @@ const handleCreatePlace = async (client, res, place, tokenId, imagePath) => {
         new Date().toISOString(),
       ]
     )
-    .then(() => {
-      res.status(201).send("Place created successfully.");
-    })
     .catch((err) => {
       console.log(err);
-      res.status(500).json(err);
     });
+
+  return result.rowCount > 0;
 };
 
 const handleDeletePlaceById = async (client, placeId, tokenId) => {

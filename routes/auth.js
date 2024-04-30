@@ -33,7 +33,14 @@ router.post("/register", async (req, res) => {
       return res.status(403).send("Username already in use.");
     }
 
-    handleCreateUser(client, res, user);
+    handleCreateUser(client, user).then((isCreated) => {
+      if (isCreated) {
+        const token = generateToken(user.id);
+        res.status(201).json({ token });
+      } else {
+        res.status(400).send("User creation failed.");
+      }
+    });
   } catch (err) {
     res.status(500).json(err);
   } finally {
@@ -162,8 +169,8 @@ const generateHashPassword = (password) => {
   return crypto.createHash("sha256").update(password).digest().toString("hex");
 };
 
-const handleCreateUser = async (client, res, user) => {
-  client
+const handleCreateUser = async (client, user) => {
+  const result = await client
     .query(
       `INSERT INTO users (id, username, password, first_name, last_name, email, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7);`,
@@ -177,14 +184,12 @@ const handleCreateUser = async (client, res, user) => {
         new Date().toISOString(),
       ]
     )
-    .then(() => {
-      const token = generateToken(user.id);
-      res.status(201).json({ token });
-    })
+
     .catch((err) => {
       console.log(err);
-      res.status(500).json(err);
     });
+
+  return result.rowCount > 0;
 };
 
 module.exports = router;
