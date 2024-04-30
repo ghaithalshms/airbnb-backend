@@ -204,6 +204,19 @@ router.get("/place", async (req, res) => {
 //   }
 // });
 
+router.get("/places", async (req, res) => {
+  const client = await handleGetClient();
+  try {
+    const places = await handleGetPlaces(client);
+    res.status(200).json(places);
+  } catch (err) {
+    res.status(500).json(err);
+    console.log(err);
+  } finally {
+    client?.release();
+  }
+});
+
 const handleGetClient = async () => {
   const pool = new Pool({ connectionString: process.env.PG_STRING });
   const client = await pool.connect().catch((err) => {
@@ -358,6 +371,16 @@ const handleGetPlaceById = async (client, id) => {
   }
 };
 
+const handleGetPlaces = async (client, filters) => {
+  const { query, parameters } = setGetPlacesQueryParameters(filters);
+
+  const result = await client.query(query, parameters).catch((err) => {
+    console.log(err);
+  });
+
+  return result.rowCount > 0 ? result.rows : null;
+};
+
 const handleAddPlaceToFavoriteById = async (client, placeId, tokenId) => {
   const result = await client
     .query(
@@ -370,6 +393,91 @@ const handleAddPlaceToFavoriteById = async (client, placeId, tokenId) => {
     });
 
   return result.rowCount > 0;
+};
+
+const setGetPlacesQueryParameters = (filters) => {
+  let query = `SELECT * FROM places`;
+  let parameters = [];
+
+  if (filters.category) {
+    query += ` WHERE category = $${parameters.length + 1}`;
+    parameters.push(filters.category);
+  }
+  if (filters.country) {
+    query += ` WHERE country IN $${parameters.length + 1}`;
+    parameters.push(filters.countries);
+  }
+  if (filters.city) {
+    query += ` WHERE city IN $${parameters.length + 1}`;
+    parameters.push(filters.cities);
+  }
+  if (filters.county) {
+    query += ` WHERE county IN $${parameters.length + 1}`;
+    parameters.push(filters.counties);
+  }
+  if (filters.district) {
+    query += ` WHERE district IN $${parameters.length + 1}`;
+    parameters.push(filters.districts);
+  }
+  if (filters.area) {
+    if (filters.area.max) {
+      query += ` WHERE area > $${parameters.length + 1}`;
+      parameters.push(filters.area.max);
+    }
+    if (filters.area.min) {
+      query += ` WHERE area < $${parameters.length + 1}`;
+      parameters.push(filters.area.min);
+    }
+  }
+  if (filters.rooms) {
+    query += ` WHERE rooms = $${parameters.length + 1}`;
+    parameters.push(filters.rooms);
+  }
+  if (filters.beds) {
+    query += ` WHERE beds = $${parameters.length + 1}`;
+    parameters.push(filters.beds);
+  }
+  if (filters.wc) {
+    query += ` WHERE wc = $${parameters.length + 1}`;
+    parameters.push(filters.wc);
+  }
+  if (filters.pets) {
+    query += ` WHERE pets = $${parameters.length + 1}`;
+    parameters.push(filters.pets);
+  }
+  if (filters.available) {
+    query += ` WHERE available = $${parameters.length + 1}`;
+    parameters.push(filters.available);
+  }
+  if (filters.price) {
+    if (filters.price.max) {
+      query += ` WHERE price > $${parameters.length + 1}`;
+      parameters.push(filters.price.max);
+    }
+    if (filters.price.min) {
+      query += ` WHERE price < $${parameters.length + 1}`;
+      parameters.push(filters.price.min);
+    }
+  }
+  if (filters.amenities) {
+    query += ` WHERE $${parameters.length + 1} <@ amenities`;
+    parameters.push(filters.amenities);
+  }
+  if (filters.features) {
+    query += ` WHERE $${parameters.length + 1} <@ features`;
+    parameters.push(filters.features);
+  }
+  if (filters.category) {
+    query += ` WHERE category = $${parameters.length + 1}`;
+    parameters.push(filters.category);
+  }
+
+  query += `;`;
+
+  return {
+    query,
+    parameters,
+  };
 };
 
 module.exports = router;
