@@ -481,12 +481,6 @@ const setGetPlacesQueryParameters = (filters) => {
     } <@ features`;
     parameters.push(filters.features);
   }
-  if (filters.category) {
-    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} category = $${
-      parameters.length + 1
-    }`;
-    parameters.push(filters.category);
-  }
 
   query += `;`;
 
