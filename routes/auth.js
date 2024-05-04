@@ -32,10 +32,10 @@ router.post("/register", async (req, res) => {
       return res.status(403).send("Username already in use.");
     }
 
-    handleCreateUser(client, user).then((isCreated) => {
-      if (isCreated) {
-        const token = generateToken(user.id);
-        res.status(201).json({ token });
+    handleCreateUser(client, user).then((userId) => {
+      if (userId) {
+        const token = generateToken(userId);
+        res.status(201).json({ token, id: userId });
       } else {
         res.status(400).send("User creation failed.");
       }
@@ -73,7 +73,7 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(id);
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, id });
   } catch (err) {
     res.status(500).json(err);
   } finally {
@@ -172,7 +172,7 @@ const handleCreateUser = async (client, user) => {
   const result = await client
     .query(
       `INSERT INTO users (id, username, password, first_name, last_name, email, created_at) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;`,
       [
         generateUserId(),
         user.username,
@@ -188,7 +188,11 @@ const handleCreateUser = async (client, user) => {
       console.log(err);
     });
 
-  return result.rowCount > 0;
+  if (result.rowCount > 0) {
+    return result.rows[0].id;
+  } else {
+    return false;
+  }
 };
 
 module.exports = router;
