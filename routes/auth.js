@@ -24,7 +24,7 @@ router.post("/register", async (req, res) => {
       }
       console.assert(value != null);
     }
-    value != null;
+
     if (!isValidUsername(user.username)) {
       return res.status(400).send("Invalid username.");
     }
