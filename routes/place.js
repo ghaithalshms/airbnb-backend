@@ -3,7 +3,7 @@ const { Pool } = require("pg");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { v4 } = require("uuid");
-const { UploadFileToFireBase } = require("../firebase/upload_file");
+const { handleUpload } = require("../firebase/file");
 
 // CREATE NEW PLACE
 router.post("/create", async (req, res) => {
@@ -41,8 +41,7 @@ router.post("/create", async (req, res) => {
     }
 
     // upload image
-    const imagePath =
-      image && (await UploadFileToFireBase(image, imageType, "places"));
+    const imagePath = image && (await handleUpload(image, imageType, "places"));
 
     if (!imagePath) {
       return res
