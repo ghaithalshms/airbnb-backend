@@ -227,11 +227,11 @@ const generateId = () => {
   return v4();
 };
 
-const handleCreatePlace = async (client, place, tokenId, imagePath) => {
+const handleCreatePlace = async (client, place, tokenId, imagePaths) => {
   const result = await client
     .query(
       `INSERT INTO places (id, title, description, country, city, county, district,
-      image_path, area, rooms, wc, price, beds, pets, available,
+      image_paths, area, rooms, wc, price, beds, pets, available,
       category, amenities, features, creator, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 
         $12, $13, $14, $15, $16, $17, $18, $19, $20)
@@ -244,7 +244,7 @@ const handleCreatePlace = async (client, place, tokenId, imagePath) => {
         place.city,
         place.county,
         place.district,
-        imagePath,
+        imagePaths,
         place.area,
         place.rooms,
         place.wc,
