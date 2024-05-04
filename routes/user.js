@@ -60,13 +60,13 @@ router.put("/update", async (req, res) => {
 router.get("/user", async (req, res) => {
   const client = await handleGetClient();
   try {
-    const username = req.query.username;
+    const id = req.query.id;
 
-    handleGetUserByUsername(client, username).then((userData) => {
+    handleGetUserById(client, id).then((userData) => {
       if (userData) {
         return res.status(200).json(userData);
       } else {
-        return res.status(401).json("This username doesn't exist: " + username);
+        return res.status(401).json("This user doesn't exist: " + id);
       }
     });
   } catch (err) {
@@ -86,13 +86,13 @@ const handleGetClient = async () => {
   return client;
 };
 
-const handleGetUserByUsername = async (client, username) => {
+const handleGetUserById = async (client, id) => {
   const result = await client
     .query(
-      `SELECT id, email, pp_path, first_name, last_name,
+      `SELECT id, username, email, pp_path, first_name, last_name,
     created_at, biography, post_count, verified
-     FROM users WHERE username = $1;`,
-      [username]
+     FROM users WHERE id = $1;`,
+      [id]
     )
     .catch((err) => {
       console.log(err);
