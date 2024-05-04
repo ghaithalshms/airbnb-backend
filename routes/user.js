@@ -60,10 +60,14 @@ router.put("/update", async (req, res) => {
 router.get("/user", async (req, res) => {
   const client = await handleGetClient();
   try {
-    const id = req.query.id;
+    const username = req.query.username;
 
-    handleGetUserById(client, res, id).then((userData) => {
-      return res.status(200).json(userData);
+    handleGetUserByUsername(client, username).then((userData) => {
+      if (userData) {
+        return res.status(200).json(userData);
+      } else {
+        return res.status(401).json("This username doesn't exist: " + username);
+      }
     });
   } catch (err) {
     res.status(500).json(err);
@@ -82,12 +86,11 @@ const handleGetClient = async () => {
   return client;
 };
 
-const handleGetUserById = async (client, res, id) => {
+const handleGetUserByUsername = async (client, username) => {
   const result = await client
-    .query("SELECT * FROM users WHERE id = $1;", [id])
+    .query("SELECT * FROM users WHERE username = $1;", [username])
     .catch((err) => {
       console.log(err);
-      res.status(500).json(err);
     });
 
   if (result.rowCount > 0) {
