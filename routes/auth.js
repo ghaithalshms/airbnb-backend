@@ -22,7 +22,6 @@ router.post("/register", async (req, res) => {
       if (!value) {
         return res.status(400).send("Missing required data.");
       }
-      console.assert(value != null);
     }
 
     if (!isValidUsername(user.username)) {
