@@ -88,7 +88,12 @@ const handleGetClient = async () => {
 
 const handleGetUserByUsername = async (client, username) => {
   const result = await client
-    .query("SELECT * FROM users WHERE username = $1;", [username])
+    .query(
+      `SELECT id, email, pp_path, first_name, last_name,
+    created_at, biography, post_count, verified
+     FROM users WHERE username = $1;`,
+      [username]
+    )
     .catch((err) => {
       console.log(err);
     });
