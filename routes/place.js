@@ -4,16 +4,19 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { v4 } = require("uuid");
 const { handleUpload } = require("../firebase/file");
+const multer = require("multer");
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // CREATE NEW PLACE
-router.post("/create", async (req, res) => {
+router.post("/create", upload.array("images", 3), async (req, res) => {
   const client = await handleGetClient();
 
   try {
     const place = req.body.place;
     const token = req.body.token;
-    const image = req.image;
-    const imageType = req.imageType;
+    const images = req.images;
 
     // verify data
     if (
@@ -40,17 +43,19 @@ router.post("/create", async (req, res) => {
         .json("You are not authorized to create this place, wrong token.");
     }
 
-    // upload image
-    const imagePath = image && (await handleUpload(image, imageType, "places"));
-
-    if (!imagePath) {
-      return res
-        .status(500)
-        .json("Unexpected error while uploading the image.");
+    // upload images
+    const imagePaths = [];
+    for (const image of images) {
+      const imagePath = await handleUpload(
+        image.buffer,
+        image.mimetype,
+        "places"
+      );
+      imagePaths.push(imagePath);
     }
 
     // create place
-    handleCreatePlace(client, place, tokenId, imagePath).then((isCreated) => {
+    handleCreatePlace(client, place, tokenId, imagePaths).then((isCreated) => {
       if (isCreated) {
         res.status(200).send("Place created successfully.");
       } else {
