@@ -54,13 +54,16 @@ router.post("/create", upload.array("images", 3), async (req, res) => {
     }
 
     // create place
-    handleCreatePlace(client, place, tokenId, imagePaths).then((isCreated) => {
-      if (isCreated) {
-        res.status(200).send("Place created successfully.");
-      } else {
-        res.status(500).send("Unexpected error while creating the place.");
+    handleCreatePlace(client, place, tokenId, imagePaths).then(
+      async (isCreated) => {
+        if (isCreated) {
+          await handleUpdateUserPostCount(client, tokenId, true);
+          res.status(200).send("Place created successfully.");
+        } else {
+          res.status(500).send("Unexpected error while creating the place.");
+        }
       }
-    });
+    );
   } catch (err) {
     res.status(500).json(err);
   } finally {
@@ -153,8 +156,9 @@ router.delete("/delete", async (req, res) => {
         .json("You are not authorized to delete this place.");
     }
 
-    handleDeletePlaceById(client, id, tokenId).then((isDeleted) => {
+    handleDeletePlaceById(client, id, tokenId).then(async (isDeleted) => {
       if (isDeleted) {
+        await handleUpdateUserPostCount(client, tokenId, false);
         res.status(200).send("Place deleted successfully: " + id);
       } else {
         res
@@ -266,6 +270,20 @@ const handleCreatePlace = async (client, place, tokenId, imagePaths) => {
 const handleDeletePlaceById = async (client, placeId, tokenId) => {
   const result = await client
     .query(`DELETE FROM places WHERE id = $1 RETURNING id;`, [placeId, tokenId])
+    .catch((err) => {
+      console.log(err);
+    });
+
+  return result.rowCount > 0;
+};
+
+const handleUpdateUserPostCount = async (client, id, isAugmenting) => {
+  const result = await client
+    .query(
+      `UPDATE users SET post_count = post_count ${isAugmenting ? "+" : "-"} 1 
+   WHERE id = $1 RETURNING id;`,
+      [id]
+    )
     .catch((err) => {
       console.log(err);
     });
