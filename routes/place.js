@@ -230,12 +230,12 @@ const generateId = () => {
 const handleCreatePlace = async (client, place, tokenId, imagePaths) => {
   const result = await client
     .query(
-      `INSERT INTO places (id, title, description, country, city, county, district,
-      image_paths, area, rooms, wc, price, beds, pets, available,
-      category, amenities, features, creator, created_at) 
+      `INSERT INTO places (id, title, description, country, city, county,
+        district, image_paths, area, rooms, wc, price, beds, pets,
+        category, amenities, features, creator, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 
-        $12, $13, $14, $15, $16, $17, $18, $19, $20)
-         RETURNING id;`,
+        $12, $13, $14, $15, $16, $17, $18, $19)
+      RETURNING id;`,
       [
         generateId(),
         place.title,
@@ -251,7 +251,6 @@ const handleCreatePlace = async (client, place, tokenId, imagePaths) => {
         place.price,
         place.beds,
         place.pets,
-        place.available,
         place.category,
         place.amenities,
         place.features,
@@ -306,12 +305,11 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
         beds = $12,
         wc = $13,
         pets = $14,
-        available = $15,
-        category = $16,
-        amenities = $17,
-        features = $18,
-        updated_at = $19
-      WHERE id = $20
+        category = $15,
+        amenities = $16,
+        features = $17,
+        updated_at = $18
+      WHERE id = $19
       RETURNING id;`,
       [
         placeDataToUpdate.title,
@@ -322,7 +320,6 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
         placeDataToUpdate.district,
         placeDataToUpdate.category,
         placeDataToUpdate.price,
-        placeDataToUpdate.available,
         placeDataToUpdate.area,
         placeDataToUpdate.rooms,
         placeDataToUpdate.beds,
