@@ -21,7 +21,7 @@ router.post("/create", upload.array("images", 3), async (req, res) => {
     // verify data
     if (
       !(
-        image &&
+        images &&
         place.title &&
         place.description &&
         place.country &&
