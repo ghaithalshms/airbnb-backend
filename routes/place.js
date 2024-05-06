@@ -24,7 +24,6 @@ router.post("/create", upload.array("images", 3), async (req, res) => {
         images &&
         place.title &&
         place.description &&
-        place.country &&
         place.city &&
         place.county &&
         place.price &&
@@ -230,17 +229,16 @@ const generateId = () => {
 const handleCreatePlace = async (client, place, tokenId, imagePaths) => {
   const result = await client
     .query(
-      `INSERT INTO places (id, title, description, country, city, county,
+      `INSERT INTO places (id, title, description, city, county,
         district, image_paths, area, rooms, wc, price, beds, pets,
         category, amenities, features, creator, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 
-        $12, $13, $14, $15, $16, $17, $18, $19)
+        $12, $13, $14, $15, $16, $17, $18)
       RETURNING id;`,
       [
         generateId(),
         place.title,
         place.description,
-        place.country,
         place.city,
         place.county,
         place.district,
@@ -293,28 +291,26 @@ const handleUpdatePlaceById = async (client, id, placeDataToUpdate) => {
       `UPDATE places SET
         title = $1,
         description = $2,
-        country = $3,
-        city = $4,
-        county = $5,
-        district = $6,
-        category = $7,
-        price = $8,
-        available = $9,
-        area = $10,
-        rooms = $11,
-        beds = $12,
-        wc = $13,
-        pets = $14,
-        category = $15,
-        amenities = $16,
-        features = $17,
-        updated_at = $18
-      WHERE id = $19
+        city = $3,
+        county = $4,
+        district = $5,
+        category = $6,
+        price = $7,
+        available = $8,
+        area = $9,
+        rooms = $10,
+        beds = $11,
+        wc = $12,
+        pets = $13,
+        category = $14,
+        amenities = $15,
+        features = $16,
+        updated_at = $17
+      WHERE id = $18
       RETURNING id;`,
       [
         placeDataToUpdate.title,
         placeDataToUpdate.description,
-        placeDataToUpdate.country,
         placeDataToUpdate.city,
         placeDataToUpdate.county,
         placeDataToUpdate.district,
@@ -388,12 +384,7 @@ const setGetPlacesQueryParameters = (filters) => {
     }`;
     parameters.push(filters.category);
   }
-  if (filters.country) {
-    query += ` ${parameters.length > 0 ? "AND" : "WHERE"} country IN $${
-      parameters.length + 1
-    }`;
-    parameters.push(filters.countries);
-  }
+
   if (filters.city) {
     query += ` ${parameters.length > 0 ? "AND" : "WHERE"} city IN $${
       parameters.length + 1
